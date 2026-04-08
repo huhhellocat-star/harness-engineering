@@ -1,8 +1,19 @@
 # harness-engineering
 
-`harness-engineering` is a minimal, portable Agent Skill for making repositories easier for coding agents to navigate, plan, verify, and hand off.
+`harness-engineering` is a portable Agent Skill that helps coding agents (Codex, Claude Code, and other compatible clients) follow best practices in product development and project modification.
 
-The skill is written against the open Agent Skills format so the same `SKILL.md` can be used in multiple compatible clients, including OpenAI Codex and Claude Code.
+The skill brings together insights from OpenAI's harness engineering paradigm, Anthropic's multi-agent research, and the community's Ralph pattern into actionable playbooks, templates, and principles that agents use automatically.
+
+## What It Does
+
+When triggered, this skill gives agents:
+
+- **A startup audit** — fast harness check when entering any new repository
+- **Workflow routing** — playbooks for common scenarios (new project, feature dev, long-running build, refactoring, bugfix)
+- **Ready-to-use templates** — for instruction files, handoff artifacts, sprint contracts, evaluator rubrics, and progress tracking
+- **Core principles** — repo as system of record, map not encyclopedia, separate planning/doing/judging, verify against reality, structured handoffs, incremental commits, entropy management
+- **Context engineering** — progressive disclosure, context resets vs compaction, fresh context reliability
+- **Multi-agent patterns** — when and how to use planner/generator/evaluator architecture
 
 ## Repository Layout
 
@@ -11,7 +22,21 @@ harness-engineering/
 ├── README.md
 ├── .gitignore
 └── harness-engineering/
-    └── SKILL.md
+    ├── SKILL.md                        # Core skill — principles, workflow router, guidance
+    ├── playbooks/
+    │   ├── new-project.md              # Greenfield project kickoff
+    │   ├── feature-development.md      # Feature work in existing repo
+    │   ├── long-running-build.md       # Multi-session autonomous builds
+    │   ├── refactor-cleanup.md         # Refactoring and debt reduction
+    │   └── bugfix-investigation.md     # Bug investigation workflow
+    ├── templates/
+    │   ├── AGENTS.md.template          # Template for project instruction files
+    │   ├── handoff-artifact.md         # Template for session handoffs
+    │   ├── sprint-contract.md          # Template for sprint contracts
+    │   ├── evaluator-rubric.md         # Template for evaluator criteria
+    │   └── progress-tracker.json       # Template for feature tracking (JSON)
+    └── references/
+        └── ecosystem.md               # Harness engineering ecosystem resources
 ```
 
 ## Install
@@ -34,8 +59,6 @@ mkdir -p /path/to/repo/.agents/skills
 cp -R harness-engineering /path/to/repo/.agents/skills/
 ```
 
-Codex also supports repository-local discovery from `.agents/skills`. See the official docs for current details.
-
 ### Claude Code
 
 Personal install:
@@ -52,23 +75,53 @@ mkdir -p /path/to/repo/.claude/skills
 cp -R harness-engineering /path/to/repo/.claude/skills/
 ```
 
-Claude Code discovers skills from `.claude/skills` and personal skills from `~/.claude/skills`.
+### GitHub Copilot CLI
+
+Personal install:
+
+```bash
+mkdir -p ~/.copilot/skills
+cp -R harness-engineering ~/.copilot/skills/
+```
 
 ## Verify
 
-After installing:
+After installing, ask the agent "what skills are available" or start a task that involves project setup, code review, or long-running development. The skill should trigger automatically.
 
-- In Codex, ask what skills are available or trigger a task that should match `harness-engineering`.
-- In Claude Code, ask what skills are available or trigger a task that should match `harness-engineering`.
+## Core Concepts
 
-If the skill does not appear immediately, restart the client.
+| Concept | Description |
+|---------|-------------|
+| **Repo as system of record** | Everything the agent needs lives in the repo — Slack, tickets, and memory don't count |
+| **Map, not encyclopedia** | Instruction files are ~100-line directories pointing to deeper docs |
+| **Separate planning, doing, judging** | Don't let one agent spec, implement, and grade itself |
+| **Make quality gradable** | Convert "make it better" into concrete, weighted criteria |
+| **Verify against reality** | Test the running product, not just the code |
+| **Structured handoffs** | Context reset + handoff artifact beats a bloated session |
+| **Work incrementally** | One feature at a time, commit often, test each feature |
+| **Manage entropy** | Agents replicate patterns — including bad ones. Encode good patterns as lint rules. |
+| **Complexity earns its keep** | Every harness component is a claim the model can't do X. Stress-test those claims. |
 
-## Design Notes
+## Playbooks
 
-- Uses only the open `SKILL.md` format and standard frontmatter fields.
-- Does not include Codex-only `agents/openai.yaml`.
-- Does not include Claude-only extensions such as invocation control fields.
-- Keeps the repository intentionally small: one skill, no bundled scripts, no extra references.
+| Playbook | When to Use |
+|----------|-------------|
+| [New Project](harness-engineering/playbooks/new-project.md) | Starting from scratch — spec expansion, scaffold, incremental build |
+| [Feature Development](harness-engineering/playbooks/feature-development.md) | Adding features to an existing codebase |
+| [Long-Running Build](harness-engineering/playbooks/long-running-build.md) | Multi-hour/multi-session autonomous development |
+| [Refactor & Cleanup](harness-engineering/playbooks/refactor-cleanup.md) | Tech debt, code cleanup, architectural improvement |
+| [Bug Investigation](harness-engineering/playbooks/bugfix-investigation.md) | Reproduce → diagnose → test → fix → prevent |
+
+## Sources
+
+This skill synthesizes:
+
+- [OpenAI: Harness Engineering](https://openai.com/index/harness-engineering/) — the original paradigm
+- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — three-agent architecture
+- [Anthropic: Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — initializer + coding agent pattern
+- [Ralph (snarktank/ralph)](https://github.com/snarktank/ralph) — iterative agent loop
+- [Awesome Harness Engineering](https://github.com/walkinglabs/awesome-harness-engineering) — community resources
+- [deusyu/harness-engineering](https://github.com/deusyu/harness-engineering) — learning archive and concept analysis
 
 ## Compatibility
 
@@ -78,6 +131,15 @@ This repository follows the open Agent Skills format:
 - Agent Skills specification: https://agentskills.io/specification
 - Codex skills docs: https://developers.openai.com/codex/skills
 - Claude Code skills docs: https://code.claude.com/docs/en/skills
+
+## Contributing
+
+Contributions welcome via Issues and PRs:
+
+- Improve or add playbooks
+- Enhance templates
+- Add ecosystem references
+- Share real-world experience reports
 
 ## License
 

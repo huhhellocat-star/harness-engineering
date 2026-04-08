@@ -1,0 +1,95 @@
+# AGENTS.md Template
+
+> Copy this template to your project and customize it. Keep it under 150 lines.
+> The instruction file is a map, not an encyclopedia — point to deeper docs, don't duplicate them.
+
+---
+
+# [Project Name]
+
+## What Is This
+
+[1-2 sentences: what this repo is, who it's for, what problem it solves]
+
+## Quick Start
+
+```bash
+# Install dependencies
+[command]
+
+# Start development server
+[command]
+
+# Run tests
+[command]
+
+# Run linter
+[command]
+```
+
+## Repository Structure
+
+```
+[project]/
+├── src/           # Application source code
+│   ├── [module]/  # [brief description]
+│   └── [module]/  # [brief description]
+├── tests/         # Test suite
+├── docs/          # Extended documentation
+│   ├── architecture.md
+│   └── [other docs]
+├── scripts/       # Build and utility scripts
+└── [other dirs]
+```
+
+## How Work Is Organized
+
+- Features are implemented one at a time
+- Each feature gets a descriptive commit: `feat: [description]`
+- Tests are written alongside code, not after
+- All changes must pass the existing test suite before committing
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `docs/architecture.md` | System design, module boundaries, data flows |
+| `docs/spec.md` | Product specification and feature requirements |
+| `[other]` | [purpose] |
+
+## Verification
+
+### Tests
+```bash
+[exact test command]
+```
+
+### Lint
+```bash
+[exact lint command]
+```
+
+### Build
+```bash
+[exact build command]
+```
+
+### End-to-end
+[How to verify features in the running application]
+
+## Constraints
+
+- [Constraint 1: e.g., "Do not modify files in vendor/"]
+- [Constraint 2: e.g., "All API endpoints must have input validation"]
+- [Constraint 3: e.g., "Follow existing naming patterns in src/"]
+
+## Risky Areas
+
+| Area | Risk | Mitigation |
+|------|------|------------|
+| [module/file] | [what can go wrong] | [how to be careful] |
+
+## Known Debt
+
+- [ ] [Debt item 1]
+- [ ] [Debt item 2]

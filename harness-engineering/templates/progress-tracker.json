@@ -1,0 +1,30 @@
+[
+  {
+    "id": "feature-001",
+    "category": "core",
+    "description": "Example: User can create a new account with email and password",
+    "steps": [
+      "Navigate to /signup",
+      "Fill in email and password fields",
+      "Click 'Create Account'",
+      "Verify redirect to dashboard",
+      "Verify welcome message appears"
+    ],
+    "passes": false,
+    "notes": ""
+  },
+  {
+    "id": "feature-002",
+    "category": "core",
+    "description": "Example: User can log in with existing credentials",
+    "steps": [
+      "Navigate to /login",
+      "Fill in email and password",
+      "Click 'Log In'",
+      "Verify redirect to dashboard",
+      "Verify user data loads correctly"
+    ],
+    "passes": false,
+    "notes": ""
+  }
+]
