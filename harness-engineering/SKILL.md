@@ -16,11 +16,13 @@ Traditional:  Human writes code → Machine executes code
 Harness:      Human designs constraints → Agent writes code → Machine executes code
 ```
 
-This skill synthesizes three bodies of work into operating rules:
+This skill synthesizes five bodies of work into operating rules:
 
-- **OpenAI**: humans steer while agents execute; the repository is the agent's durable knowledge base; mechanical enforcement over prose rules; entropy must be actively managed.
-- **Anthropic**: long-running agent work improves when planning, generation, and evaluation are separated; structured handoffs and context resets beat bloated sessions; verify against the running system.
+- **OpenAI**: humans steer while agents execute; the repository is the agent's durable knowledge base; mechanical enforcement over prose rules; agent readability over human readability; throughput changes merge philosophy; entropy must be actively managed.
+- **Anthropic**: long-running agent work improves when planning, generation, and evaluation are separated; structured handoffs and context resets beat bloated sessions; verify against the running system; calibrate evaluators with few-shot examples.
 - **Community (Ralph pattern)**: fresh context is reliability; backpressure over prescription; disk is state, git is memory; steer with signals, not scripts.
+- **LangChain**: Agent = Model + Harness; context rot degrades performance as windows fill; models can overfit to specific harnesses; progressive disclosure via skills.
+- **Martin Fowler / Böckeler**: three-layer framework (context engineering → architectural constraints → garbage collection agents); stricter constraints yield more autonomy; harnesses will become future service templates.
 
 ## How To Use This Skill
 
@@ -142,7 +144,36 @@ Agents reproduce whatever patterns exist in the repo — including bad ones. Tec
 - Fix bad patterns early — they propagate exponentially
 - Track debt explicitly so agents don't perpetuate it
 
-### 9. Add complexity only when it earns its keep
+### 9. Optimize for agent readability
+
+The agent can only work with what it can reason about. Optimize the codebase for agent comprehension, not just human readability.
+
+- **Choose "boring" technology** — stable APIs, well-covered in training data, composable. Boring tech is easier for agents to model.
+- **Reimplement subsets over wrapping opaque upstream** — when upstream behavior is non-transparent, a small custom implementation with full test coverage and integrated telemetry can be cheaper than wrapping a black box.
+- **Support per-worktree isolation** — let the application start from a git worktree so agents can run isolated instances per change.
+- **Expose observability to the agent** — Chrome DevTools protocol, DOM snapshots, screenshots, local metrics (LogQL, PromQL) make prompts like "ensure startup completes in 800ms" actionable.
+- **Keep instruction files concise** — aim for ~60-100 lines. Beyond that, effectiveness drops. If the file is too long, the problem is missing structure elsewhere.
+
+### 10. Throughput changes merge philosophy
+
+When agent throughput far exceeds human attention, traditional engineering norms shift. The economic model changes: **correction cost drops, waiting cost rises.**
+
+- PRs become small, fast-flowing changes — not crafted artifacts
+- Agent-reviewing-agent patterns replace mandatory human review
+- Minimize merge gates — flaky test? Rerun later, don't block indefinitely
+- Fix-forward is the default — roll back only when correction is expensive
+- This only works with sufficient backpressure (tests, linters, structural checks) to prevent quality collapse
+
+### 11. Stricter constraints yield more autonomy
+
+This is counterintuitive: giving agents more freedom increases error rate. Narrowing the solution space with architectural constraints makes agents more reliable within those boundaries.
+
+- Enforce module boundaries with linters, not just documentation
+- Use forward-only dependency rules (e.g., Types → Config → Repo → Service → Runtime → UI)
+- Cross-cutting concerns enter through Providers, not ad-hoc imports
+- The harness enforces the "what" centrally; agents have full autonomy on the "how" within boundaries
+
+### 12. Add complexity only when it earns its keep
 
 Every harness component is a claim that the model cannot yet do something reliably.
 
@@ -302,6 +333,9 @@ Use an evaluator when:
 - quality is subjective
 - the output can look impressive while still being broken
 - acceptance depends on real workflows, not just static code
+- the task sits at or beyond the edge of what the current model does reliably solo
+
+The evaluator's value depends on the task's position relative to model capability: within the model's reliable range, it's overhead; beyond it, it's essential. Re-evaluate with each model upgrade.
 
 An effective evaluator:
 
@@ -310,6 +344,22 @@ An effective evaluator:
 - produces concrete failures with reproduction steps
 - is skeptical by default — tuned to reject, not to praise
 - blocks completion when thresholds are not met
+
+### Evaluator calibration
+
+Out of the box, Claude is a poor QA agent. It identifies issues then talks itself into deciding they are not important. Calibration is required:
+
+1. **Use few-shot examples** with detailed score breakdowns to align the evaluator's judgment with human preferences and reduce score drift across iterations
+2. **Run the calibration loop**: read evaluator logs → find examples where judgment diverges from yours → update the evaluator's prompt → repeat until grading is reasonable
+3. **Instruct the generator to make strategic decisions** after each evaluation: refine the current direction if scores trend well, or pivot to an entirely different approach if the current one is not working
+
+### Agent communication via files
+
+In multi-agent setups, communicate through files rather than conversation:
+
+- One agent writes a file (spec, contract, feedback)
+- Another agent reads it and responds within that file or writes a new one
+- This keeps artifacts versioned, inspectable, and persistent across context resets
 
 See [templates/evaluator-rubric.md](templates/evaluator-rubric.md) for a ready-to-use rubric.
 
@@ -341,6 +391,54 @@ Make the app legible to agents:
 
 If the application cannot be observed by the agent, the agent cannot reliably improve it.
 
+## Harness Components
+
+**Agent = Model + Harness.** The harness is everything around the model that shapes its behavior. Harness optimization can have as much impact as model choice — in some cases more (Terminal Bench 2.0 demonstrated pure harness optimization moving from Top 30 to Top 5).
+
+### The six configuration levers (HumanLayer model)
+
+| Lever | Description | Guidance |
+|-------|-------------|----------|
+| **AGENTS.md** | Project instruction file | Keep to ~60-100 lines. Progressive disclosure to deeper docs. |
+| **MCP Servers** | Tool access and API connections | Only expose what the agent needs. Too many tools fill context. |
+| **Skills** | Reusable workflows loaded on-demand | Skills are progressive disclosure — load when needed, not upfront. |
+| **Sub-Agents** | Delegated specialized tasks | Act as context firewalls — each sub-agent gets only the context it needs. |
+| **Hooks** | Automated event handlers | Success should be silent; failure should report loudly. |
+| **Back-Pressure** | Constraints that prevent drift | Tests, linters, structural checks. Prefer cheap, fast signals. |
+
+### Architecture layering pattern (OpenAI model)
+
+For complex projects, enforce an explicit dependency direction:
+
+```
+Types → Config → Repo → Service → Runtime → UI
+```
+
+- Each layer may depend only on layers to its left
+- Cross-cutting concerns enter through Providers, not ad-hoc imports
+- Enforce with a custom linter — documentation alone is insufficient
+- Within each domain, apply the same layering independently
+
+### Model-harness coupling risk
+
+Models can overfit to a specific harness — performing well with one set of tools and constraints but poorly with a different arrangement. Watch for:
+
+- Performance that drops sharply when switching tools or runtimes
+- Workflows that are brittle to minor changes in prompt structure
+- Agent behaviors that exploit harness-specific quirks rather than solving the underlying problem
+
+Avoid overfitting by keeping the harness simple, testing with different models periodically, and ensuring constraints are structurally sound rather than prompt-engineered around a specific model's tendencies.
+
+## Three-Layer Framework (Fowler / Böckeler)
+
+Harness engineering has three complementary layers:
+
+1. **Context Engineering** — what the model sees: instruction files, progressive disclosure, structured prompts, conversation management, context window hygiene
+2. **Architectural Constraints** — what the model is allowed to do: module boundaries, dependency rules, lint enforcement, CI gates, type systems
+3. **Garbage Collection Agents** — what cleans up after the model: entropy detection, pattern drift correction, stale doc removal, periodic refactoring sweeps
+
+All three layers are needed. Context alone is insufficient without enforcement; enforcement alone fails without good context; neither works long-term without garbage collection.
+
 ## Anti-Patterns
 
 Avoid these failure modes:
@@ -356,6 +454,9 @@ Avoid these failure modes:
 - keeping stale docs that disagree with the code
 - premature declaration of victory (marking features done without end-to-end testing)
 - one-shotting large builds instead of working incrementally
+- model-harness coupling — optimizing the harness around one model's quirks instead of structural soundness
+- context rot — letting the context window fill with stale information that degrades later decisions
+- loading all tools and skills upfront instead of on-demand (fills context, reduces precision)
 
 ## Templates
 

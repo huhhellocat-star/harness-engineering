@@ -162,20 +162,31 @@ When ending a session (by choice or because context is degrading), write a hando
 ### When The Evaluator Fails A Sprint
 
 1. Read the evaluator's feedback carefully
-2. Prioritize bugs by severity
-3. Fix all blocking bugs
-4. Re-run evaluation
-5. Only proceed to next sprint when current sprint passes
+2. The generator must make a **strategic decision**: refine the current approach (if scores are trending well) or pivot to an entirely different approach (if the current direction is fundamentally flawed)
+3. Prioritize bugs by severity
+4. Fix all blocking bugs
+5. Re-run evaluation
+6. Only proceed to next sprint when current sprint passes
+
+### Evaluator Calibration
+
+Out of the box, evaluators are unreliable. Calibrate before trusting their judgment:
+
+1. **Seed with few-shot examples**: provide 2-3 examples with detailed score breakdowns showing what constitutes a "pass" vs "fail" for each criterion
+2. **Run the calibration loop**: review evaluator logs → identify where its judgment diverges from human assessment → update the evaluator's criteria/prompt → repeat
+3. **Watch for score drift**: evaluators may become more lenient over time within a long session; context resets help reset calibration
+4. **Communication is file-based**: the evaluator writes feedback to a file, the generator reads it and responds — this keeps artifacts versioned and inspectable
 
 ### Simplifying The Harness Over Time
 
 As models improve, re-evaluate whether each harness component is still load-bearing:
 
-- Can the model handle larger chunks without sprint decomposition?
-- Does it still need explicit evaluation, or does self-evaluation work for this task?
+- Can the model handle larger chunks without sprint decomposition? (e.g., Opus 4.5 needed sprints; Opus 4.6 didn't)
+- Does it still need explicit per-sprint evaluation, or can evaluation move to a single end-of-build pass?
 - Are context resets still needed, or does compaction suffice?
+- Can the evaluator and generator be merged into one agent with self-evaluation pauses?
 
-Strip away pieces that are no longer necessary. Add new pieces for capabilities that weren't possible before.
+**Every harness component encodes an assumption about what the model can't do. Stress-test those assumptions with each model upgrade.** Strip away pieces that are no longer necessary. Add new pieces for capabilities that weren't possible before. The interesting harness combinations don't shrink — they move.
 
 ## Cost and Duration Reference
 

@@ -19,6 +19,36 @@
 | [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) | Core principle: "find the simplest solution possible, and only increase complexity when needed." |
 | [Effective Context Engineering for AI Agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | Context window management, compaction strategies, and progressive disclosure. |
 
+### Martin Fowler / Thoughtworks
+
+| Resource | Description |
+|----------|-------------|
+| [Software Engineering with AI Coding Agents](https://martinfowler.com/articles/ai-coding-agents.html) | Birgitta Böckeler's three-layer framework: Context Engineering → Architectural Constraints → Garbage Collection Agents. Four hypotheses on the future: harness as service template, stricter constraints → more autonomy, tech stack convergence toward AI-friendly choices, pre/post-AI application split. Critiques OpenAI's original for underemphasizing functional correctness verification. |
+
+### LangChain
+
+| Resource | Description |
+|----------|-------------|
+| [Anatomy of an Agent Harness](https://blog.langchain.dev/anatomy-of-an-agent-harness/) | Defines Agent = Model + Harness. Introduces context rot, the Ralph loop mechanism, model-harness coupling (models overfit to specific harnesses), and progressive disclosure via skills. Terminal Bench 2.0 finding: pure harness optimization moved performance from Top 30 → Top 5. |
+
+### HumanLayer
+
+| Resource | Description |
+|----------|-------------|
+| [It's Not a Prompt Issue. It's a Skill Issue.](https://humanlayer.dev/blog/its-not-a-prompt-issue-its-a-skill-issue) | Defines 6 configuration levers: AGENTS.md (≤60 lines), MCP Servers, Skills, Sub-Agents, Hooks, Back-Pressure. Key insight: "the model is probably fine — it's just a skill issue." Cheap models for subtasks, expensive models for orchestration. |
+
+### Mitchell Hashimoto
+
+| Resource | Description |
+|----------|-------------|
+| [Engineer the Harness](https://mitchellh.com/writing/engineer-the-harness) | Early articulation of "engineer the harness" concept. Focus on how to set up the environment so AI coding agents succeed — constraints, tooling, and feedback loops as the engineer's primary output. |
+
+### YDD / Efficiency Paradox
+
+| Resource | Description |
+|----------|-------------|
+| [Efficiency Paradox in AI-Assisted Development](https://yentingchen.com/ydd-efficiency-paradox/) | AI as NCX-10 (Theory of Constraints metaphor). Distinguishes Spec vs Rule vs Skill (loading mechanism distinction). Swiss cheese model for multi-layer verification defense. "Washing machine paradox" — speed gain enables capability evolution, not just time saving. Key insight: single-task speed isn't the bottleneck; inability to parallelize is. |
+
 ## Open-Source Projects
 
 ### Ralph Pattern
@@ -88,3 +118,41 @@ The "Ralph Wiggum loop" is one of the core implementation patterns for harness e
 | Evaluation Engineering | How to build reliable evaluators for agent output |
 | Agent Orchestration | How to coordinate multiple agents and manage handoffs |
 | Observability Engineering | How to make applications legible to agents |
+
+### Martin Fowler Three-Layer Framework
+
+| Layer | Description | Examples |
+|-------|-------------|----------|
+| Context Engineering | What the model sees | AGENTS.md, progressive disclosure, structured prompts, conversation management |
+| Architectural Constraints | What the model is allowed to do | Module boundaries, dependency rules, lint enforcement, CI gates, type systems |
+| Garbage Collection Agents | What cleans up after the model | Entropy detection, pattern drift correction, stale doc removal, refactoring sweeps |
+
+### Four Forward-Looking Hypotheses (Böckeler)
+
+| Hypothesis | Implication |
+|------------|------------|
+| Harness as future service template | Today's harness patterns will evolve into standardized project templates |
+| Stricter constraints → more autonomy | Counterintuitively, narrowing the solution space makes agents more reliable |
+| Tech stack convergence | Teams will select technologies partly based on AI-friendliness |
+| Pre-AI / Post-AI application split | Existing codebases and greenfield AI-native codebases will follow different patterns |
+
+### HumanLayer Six Levers
+
+| Lever | Key Insight |
+|-------|-------------|
+| AGENTS.md | ≤60 lines. Beyond that, effectiveness drops. |
+| MCP Servers | Trust boundary — only expose what the agent needs. Too many tools fill context. |
+| Skills | Progressive loading — load on demand, not upfront. |
+| Sub-Agents | Context firewalls — each gets only the context it needs. Use cheap models for subtasks. |
+| Hooks | Success: silent. Failure: loud and actionable. |
+| Back-Pressure | The primary quality mechanism — tests, linters, structural checks. |
+
+### LangChain Agent Anatomy
+
+| Concept | Description |
+|---------|-------------|
+| Agent = Model + Harness | The harness is everything around the model: system prompts, tools, skills, sandbox, orchestration, hooks |
+| Context Rot | Performance degrades as the context window fills with stale information |
+| Model-Harness Coupling | Models can overfit to specific harnesses — test with different configurations |
+| Ralph Loop | Fresh context → read state → do work → commit → exit cleanly |
+| Terminal Bench 2.0 | Pure harness optimization moved from Top 30 → Top 5, demonstrating harness impact |

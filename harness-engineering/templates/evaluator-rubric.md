@@ -128,3 +128,37 @@ Technical polish and attention to detail.
 - **Report concrete issues** — "Button X doesn't work when Y" not "the UX could be improved"
 - **Resist the urge to praise** — focus on what's wrong, not what's right
 - **Grade against the criteria** — not against your expectations of an AI
+- **Do not talk yourself out of failures** — if something is broken, score it broken. Don't rationalize "but the rest is good"
+
+## Calibration Guide
+
+Out of the box, AI evaluators tend to identify issues then talk themselves into deciding they are not important. Calibration is essential.
+
+### Step 1: Seed with few-shot examples
+
+Provide 2-3 calibration examples in the evaluator prompt. Each example should include:
+
+```markdown
+### Calibration Example: Feature Completeness — Score 4 (FAIL)
+
+**What was tested**: Dashboard with 5 specified widgets
+**What was found**: 3 widgets rendered correctly, 1 showed static placeholder data, 1 was completely missing
+**Why this scores 4**: 60% implementation with a missing feature = below threshold.
+Do not rate this higher because "most features work" — missing features are not partial credit.
+```
+
+### Step 2: Run the calibration loop
+
+1. Have the evaluator score the product
+2. Review the evaluator's output yourself
+3. Identify where its judgment diverges from yours (common: scoring 7 where you'd score 4)
+4. Update the evaluator prompt with corrections targeting the specific divergences
+5. Repeat until scoring aligns with human judgment
+
+### Step 3: Watch for score drift
+
+Within a long session, evaluators may become more lenient. If evaluation spans multiple sprints, reset the evaluator's context to prevent drift. Each evaluation should read the rubric fresh.
+
+### Communication protocol
+
+The evaluator writes results to `docs/evaluation-[sprint].md`. The generator reads this file and writes its response plan to `docs/response-[sprint].md`. This keeps all evaluation artifacts versioned and inspectable.
